@@ -2,7 +2,7 @@ function generateQueryString(obj, url) {
     let queryString = url;
     
     // Check if the URL already contains a query string
-    const hasQueryString = url.includes('?');
+    let hasQueryString = url.includes('?');
 
     // Iterate over the key-value pairs of the object
     for (let key in obj) {
