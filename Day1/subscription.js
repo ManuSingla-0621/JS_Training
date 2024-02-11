@@ -1,190 +1,195 @@
-function updateRoutes(subscription, routes) {
-    let firstSubscribedModule = null;
+// function definiton to check the dsubscription routes
+function SubscriptionCheck(subscription,routes){
 
-    // Find the first subscribed module
-    for (let moduleData of subscription) {
-        if (moduleData.isSub) {
-            firstSubscribedModule = moduleData.name;
-            break;
-        }
-    }
+    if(subscription.length!=routes.length)   //if length of routes and subscription is not equal
+    return;
 
-    // If no module is subscribed, set all components to 'UN' and redirect to '/'
-    if (!firstSubscribedModule) {
-        for (let route of routes) {
-            route.comp = 'UN';
-            route['redirect-to'] = '/';
-        }
-        return routes;
-    }
+    let res=[];     // create a result in which stored objects
+                                              //answer array for storing the answer
+    for(let i=0; i<subscription.length;i++){
 
-    // Update routes based on subscription
-    for (let route of routes) {
-        let moduleData = subscription.find(data => data.name === route.name);
+        if(subscription[i].name==routes[i].name){
 
-        if (!moduleData || !moduleData.isSub) {
-            // Module is not subscribed or not present in subscription
-            route.comp = 'UN';
-            route['redirect-to'] = firstSubscribedModule;
-        } else if (route.subComp) {
-            // Update sub-components based on subscription
-            for (let subComp of route.subComp) {
-                let subModuleData = moduleData.subMod ? moduleData.subMod.find(data => data.name === subComp.name) : null;
-                if (!subModuleData || !subModuleData.isSub) {
-                    subComp.comp = 'UN';
-                }
+        if(subscription[i].isSub==true){              //nested loop for handling inner case
+
+            let newObject={name: routes[i].name};  
+
+            if(subscription[i].hasOwnProperty('subMod'))    
+            
+            {
+
+                 let Subscription_inner = subscription[i].subMod;
+                 let Routes_result = routes[i].subComp;
+                 let innerSubArray = SubscriptionCheck(Subscription_inner, Routes_result);
+
+                 newObject.subComp=innerSubArray;
+                 res.push(newObject);
+
             }
-        } else {
-            // If a module is subscribed, but doesn't have subComp, replace with 'UN'
-            route.comp = 'UN';
-            route['redirect-to'] = firstSubscribedModule;
+
+            else{
+
+                res.push({redirectTo: routes[i].name});
+            }
+
+        }
+
+        else{
+
+            res.push({ name: routes[i].name, comp: "UN"});
         }
     }
 
-    return routes;
+    else{
+
+         res.push({name: routes[i].name, comp: "UN"});
+
+    }
+
+    }
+  return res;// returing the result in which array of objects are their
 }
 
-// Given routes and subscription data
+
+
+// input routes 
 const routes = [
-    {
-        name: 'M1',
-        comp: 'C1',
-    },
-    {
-        name: 'M2',
-        comp: 'C2',
-    },
-    {
-        name: 'M3',
+  {
+    name: 'M1',
+    comp: 'C1',
+  },
+  {
+    name: 'M2',
+    comp: 'C2',
+  },
+  {
+    name: 'M3',
+    subComp: [
+      {
+        name: 'M3A',
+        comp: 'C3A',
+      },
+      {
+        name: 'M3B',
+        comp: 'C3B',
+      },
+    ],
+  },
+  {
+    name: 'M4',
+    subComp: [
+      {
+        name: 'M4A',
+        comp: 'C4A',
+      },
+      {
+        name: 'M4B',
+        comp: 'C4B',
+      },
+    ],
+  },
+  {
+    name: 'M5',
+    subComp: [
+      {
+        name: 'M5A',
+        comp: 'C5A',
+      },
+      {
+        name: 'M5B',
         subComp: [
-            {
-                name: 'M3A',
-                comp: 'C3A',
-            },
-            {
-                name: 'M3B',
-                comp: 'C3B',
-            },
+          {
+            name: 'M5BA',
+            comp: 'C5BA',
+          },
+          {
+            name: 'M5BB',
+            comp: 'C5BB',
+          },
+          {
+            name: 'M5BC',
+            comp: 'C5BC',
+          },
         ],
-    },
-    {
-        name: 'M4',
-        subComp: [
-            {
-                name: 'M4A',
-                comp: 'C4A',
-            },
-            {
-                name: 'M4B',
-                comp: 'C4B',
-            },
-        ],
-    },
-    {
-        name: 'M5',
-        subComp: [
-            {
-                name: 'M5A',
-                comp: 'C5A',
-            },
-            {
-                name: 'M5B',
-                subComp: [
-                    {
-                        name: 'M5BA',
-                        comp: 'C5BA',
-                    },
-                    {
-                        name: 'M5BB',
-                        comp: 'C5BB',
-                    },
-                    {
-                        name: 'M5BC',
-                        comp: 'C5BC',
-                    },
-                ],
-            },
-            {
-                name: 'M5C',
-                comp: 'C5C',
-            },
-        ],
-    },
+      },
+      {
+        name: 'M5C',
+        comp: 'C5C',
+      },
+    ],
+  },
 ];
-
+// routes which having subscription or not
 const subscription = [
-    {
-        name: 'M1',
+  {
+    name: 'M1',
+    isSub: true,
+  },
+  {
+    name: 'M2',
+    isSub: false,
+  },
+  {
+    name: 'M3',
+    isSub: false,
+    subMod: [
+      {
+        name: 'M3A',
         isSub: true,
-    },
-    {
-        name: 'M2',
+      },
+      {
+        name: 'M3B',
+        isSub: true,
+      },
+    ],
+  },
+  {
+    name: 'M4',
+    isSub: true,
+    subMod: [
+      {
+        name: 'M4A',
         isSub: false,
-    },
-    {
-        name: 'M3',
+      },
+      {
+        name: 'M4B',
+        isSub: true,
+      },
+    ],
+  },
+  {
+    name: 'M5',
+    isSub: true,
+    subMod: [
+      {
+        name: 'M5A',
         isSub: false,
-        subMod: [
-            {
-                name: 'M3A',
-                isSub: true,
-            },
-            {
-                name: 'M3B',
-                isSub: true,
-            },
-        ],
-    },
-    {
-        name: 'M4',
+      },
+      {
+        name: 'M5B',
         isSub: true,
+
         subMod: [
-            {
-                name: 'M4A',
-                isSub: false,
-            },
-            {
-                name: 'M4B',
-                isSub: true,
-            },
+          {
+            name: 'M5BA',
+            isSub: false,
+          },
+          {
+            name: 'M5BB',
+            isSub: true,
+          },
+          {
+            name: 'M5BC',
+            isSub: false,
+          },
         ],
-    },
-    {
-        name: 'M5',
+      },
+      {
+        name: 'M5C',
         isSub: true,
-        subMod: [
-            {
-                name: 'M5A',
-                isSub: false,
-            },
-            {
-                name: 'M5B',
-                isSub: true,
-                subMod: [
-                    {
-                        name: 'M5BA',
-                        isSub: false,
-                    },
-                    {
-                        name: 'M5BB',
-                        isSub: true,
-                    },
-                    {
-                        name: 'M5BC',
-                        isSub: false,
-                    },
-                ],
-            },
-            {
-                name: 'M5C',
-                isSub: true,
-            },
-        ],
-    },
+      },
+    ],
+  },
 ];
-
-// Call the function to update routes
-const updatedRoutes = updateRoutes(subscription, routes);
-
-// Output the updated routes
-console.log(JSON.stringify(updatedRoutes));
+// calling a function subscription check and then print using JSON.stringify
+console.log(JSON.stringify(SubscriptionCheck(subscription, routes)));
